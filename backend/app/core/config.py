@@ -1,4 +1,3 @@
-import os
 from typing import List, Literal
 from pydantic import Field, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,8 +21,12 @@ class Settings(BaseSettings):
     # Database Configuration
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/catering_outreach"
 
+    # Lead Provider Selection: 'apify' (default) or 'google'
+    LEAD_PROVIDER: Literal["apify", "google"] = "apify"
+
     # Third-Party API Keys
     GOOGLE_MAPS_API_KEY: str | None = None
+    APIFY_API_TOKEN: str | None = None
     OPENAI_API_KEY: str | None = None
     SENDGRID_API_KEY: str | None = None
     TWILIO_ACCOUNT_SID: str | None = None

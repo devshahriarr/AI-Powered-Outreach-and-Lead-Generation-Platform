@@ -24,8 +24,8 @@ class Lead(Base):
 
     # Contact Details (Primary outreach channels)
     phone_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    website: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    email: Mapped[Optional[str]] = mapped_column(String(255), index=True, nullable=True)
+    website: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    email: Mapped[Optional[str]] = mapped_column(Text, index=True, nullable=True)
 
     # Business Ratings
     rating: Mapped[Optional[float]] = mapped_column(Float, nullable=True)

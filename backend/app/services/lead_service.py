@@ -7,24 +7,35 @@ from app.models.lead import Lead
 from app.repositories.lead_repository import lead_repository, LeadRepository
 from app.services.base_service import BaseService
 from app.services.google_places import google_places_service, GooglePlacesService
+from app.services.apify_places_service import apify_places_service, ApifyPlacesService
 
 logger = logging.getLogger("app.services.lead_service")
 
 
 class LeadService(BaseService[Lead]):
     """
-    Lead Service pipeline coordinating Google Places lookups,
+    Lead Service pipeline coordinating Places lookups (via a pluggable provider),
     duplicate prevention, contact resolution, and database commits.
+
+    Provider selection is driven by LEAD_PROVIDER in settings:
+      - 'apify'  → ApifyPlacesService  (default, returns real businesses)
+      - 'google' → GooglePlacesService (requires a valid GOOGLE_MAPS_API_KEY)
     """
 
     def __init__(
         self,
         repository: LeadRepository = lead_repository,
-        places_service: GooglePlacesService = google_places_service
+        places_service=None,   # Union[GooglePlacesService, ApifyPlacesService]
     ) -> None:
         super().__init__(repository)
         self.repository = repository
-        self.places_service = places_service
+        # Allow explicit injection (e.g. for tests); otherwise auto-select.
+        if places_service is not None:
+            self.places_service = places_service
+        elif settings.LEAD_PROVIDER == "google":
+            self.places_service = google_places_service
+        else:
+            self.places_service = apify_places_service
 
     async def discover_and_ingest_leads(
         self,
@@ -110,6 +121,7 @@ class LeadService(BaseService[Lead]):
                     logger.info("Successfully ingested new lead: '%s' (%s)", new_lead.name, place_id)
                 except Exception as exc:
                     logger.error("Failed to commit lead '%s' to database: %s", lead_data["name"], str(exc))
+                    await db.rollback()
                     # Continue pipeline despite single insert failures
                     continue
 
