@@ -51,6 +51,32 @@ class LeadRepository(BaseRepository[Lead]):
         result = await db.execute(query)
         return list(result.scalars().all())
 
+    async def get_unprocessed_leads(
+        self, db: AsyncSession, *, skip: int = 0, limit: int = 1000
+    ) -> List[Lead]:
+        """Fetches leads that have not yet been evaluated by the qualification pipeline."""
+        query = (
+            select(self.model)
+            .where(self.model.review_status == None)
+            .offset(skip)
+            .limit(limit)
+        )
+        result = await db.execute(query)
+        return list(result.scalars().all())
+
+    async def get_by_review_status(
+        self, db: AsyncSession, *, review_status: str, skip: int = 0, limit: int = 100
+    ) -> List[Lead]:
+        """Fetches leads filtered by their review status ('qualified', 'rejected', 'needs_review')."""
+        query = (
+            select(self.model)
+            .where(self.model.review_status == review_status)
+            .offset(skip)
+            .limit(limit)
+        )
+        result = await db.execute(query)
+        return list(result.scalars().all())
+
 
 # Singleton instance mapping standard transactions injection
 lead_repository = LeadRepository()

@@ -17,6 +17,13 @@ class LeadBase(BaseModel):
     longitude: Optional[float] = Field(None, description="Physical longitude coordinates")
     status: str = Field("discovered", description="Pipeline state of outreach workflow")
     notes: Optional[str] = Field(None, description="Operational notes or system log details")
+    lead_score: int = Field(0, description="Score based on data quality")
+    is_qualified: bool = Field(False, description="Whether the lead passed qualification")
+    qualification_reason: Optional[str] = Field(None, description="Reason for qualification result")
+    cleaned_email: Optional[str] = Field(None, description="Normalized email")
+    cleaned_website: Optional[str] = Field(None, description="Normalized website")
+    cleaned_phone: Optional[str] = Field(None, description="Normalized phone")
+    review_status: Optional[str] = Field(None, description="Manual review status queue")
 
 
 class LeadCreate(LeadBase):
@@ -38,6 +45,13 @@ class LeadUpdate(BaseModel):
     longitude: Optional[float] = Field(None)
     status: Optional[str] = Field(None)
     notes: Optional[str] = Field(None)
+    lead_score: Optional[int] = Field(None)
+    is_qualified: Optional[bool] = Field(None)
+    qualification_reason: Optional[str] = Field(None)
+    cleaned_email: Optional[str] = Field(None)
+    cleaned_website: Optional[str] = Field(None)
+    cleaned_phone: Optional[str] = Field(None)
+    review_status: Optional[str] = Field(None)
 
 
 class LeadResponse(LeadBase):
@@ -64,3 +78,10 @@ class LeadDiscoverRequest(BaseModel):
     category: Optional[str] = Field(
         None, description="Target business category (e.g., 'Law offices')"
     )
+
+class LeadQualifyResponse(BaseModel):
+    """Response schema for the qualify endpoint."""
+    processed: int
+    qualified: int
+    rejected: int
+    review_required: int

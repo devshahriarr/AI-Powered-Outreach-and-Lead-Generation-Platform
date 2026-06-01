@@ -22,7 +22,14 @@ def mock_lead_instance() -> Lead:
         latitude=23.7940,
         longitude=90.4043,
         status="discovered",
-        notes="Sandbox ingestion details"
+        notes="Sandbox ingestion details",
+        lead_score=0,
+        is_qualified=False,
+        qualification_reason=None,
+        cleaned_email=None,
+        cleaned_website=None,
+        cleaned_phone=None,
+        review_status=None
     )
     # Mock SQLAlchemy internal attributes so Pydantic serialization doesn't fail
     lead.created_at = datetime.now(timezone.utc)
