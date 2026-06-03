@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
+import { ToastProvider } from "@/providers/ToastProvider";
 import { AppShell } from "@/components/layout/AppShell";
 
 const inter = Inter({
@@ -25,7 +26,9 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans h-full min-h-screen bg-background text-foreground antialiased`}>
         <QueryProvider>
           <ThemeProvider>
-            <AppShell>{children}</AppShell>
+            <ToastProvider>
+              <AppShell>{children}</AppShell>
+            </ToastProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>
