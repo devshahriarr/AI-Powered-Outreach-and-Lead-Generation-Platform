@@ -21,7 +21,7 @@ def mock_lead_instance() -> Lead:
         user_ratings_total=35,
         latitude=23.7940,
         longitude=90.4043,
-        status="discovered",
+        status="DISCOVERED",
         notes="Sandbox ingestion details",
         lead_score=0,
         is_qualified=False,
@@ -91,7 +91,7 @@ async def test_list_leads_endpoint(
     assert data[0]["id"] == 42
     assert data[0]["name"] == "Banani Law Chambers"
     assert data[0]["email"] == "info@bananilaw.com"
-    assert data[0]["status"] == "discovered"
+    assert data[0]["status"] == "DISCOVERED"
 
 
 @pytest.mark.anyio
@@ -144,12 +144,12 @@ async def test_patch_lead_pipeline_status(
     
     # Configure update return mapping
     updated_lead = mock_lead_instance
-    updated_lead.status = "in_pipeline"
+    updated_lead.status = "CONTACTED"
     updated_lead.notes = "Contacted client via email."
     mock_repo.update = AsyncMock(return_value=updated_lead)
 
     payload = {
-        "status": "in_pipeline",
+        "status": "CONTACTED",
         "notes": "Contacted client via email."
     }
 
@@ -158,7 +158,7 @@ async def test_patch_lead_pipeline_status(
     
     data = response.json()
     assert data["id"] == 42
-    assert data["status"] == "in_pipeline"
+    assert data["status"] == "CONTACTED"
     assert data["notes"] == "Contacted client via email."
 
 

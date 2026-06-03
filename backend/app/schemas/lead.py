@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
+from app.models.enums import LeadStatus
 
 
 class LeadBase(BaseModel):
@@ -15,15 +16,17 @@ class LeadBase(BaseModel):
     user_ratings_total: Optional[int] = Field(None, description="Total Google Maps review count")
     latitude: Optional[float] = Field(None, description="Physical latitude coordinates")
     longitude: Optional[float] = Field(None, description="Physical longitude coordinates")
-    status: str = Field("discovered", description="Pipeline state of outreach workflow")
+    # Unified lifecycle status using LeadStatus enum values
+    status: str = Field(LeadStatus.DISCOVERED, description="Unified pipeline lifecycle status")
     notes: Optional[str] = Field(None, description="Operational notes or system log details")
-    lead_score: int = Field(0, description="Score based on data quality")
-    is_qualified: bool = Field(False, description="Whether the lead passed qualification")
+    lead_score: int = Field(0, description="Score based on data quality (0–100)")
+    # Soft-deprecated fields — kept for backward compatibility, phase out in future
+    is_qualified: bool = Field(False, description="[Deprecated] Use status=QUALIFIED instead")
     qualification_reason: Optional[str] = Field(None, description="Reason for qualification result")
-    cleaned_email: Optional[str] = Field(None, description="Normalized email")
-    cleaned_website: Optional[str] = Field(None, description="Normalized website")
-    cleaned_phone: Optional[str] = Field(None, description="Normalized phone")
-    review_status: Optional[str] = Field(None, description="Manual review status queue")
+    cleaned_email: Optional[str] = Field(None, description="Normalized email address")
+    cleaned_website: Optional[str] = Field(None, description="Normalized website URL")
+    cleaned_phone: Optional[str] = Field(None, description="Normalized phone number")
+    review_status: Optional[str] = Field(None, description="[Deprecated] Use status field instead")
 
 
 class LeadCreate(LeadBase):
@@ -61,10 +64,7 @@ class LeadResponse(LeadBase):
     created_at: datetime = Field(..., description="Time of discovery")
     updated_at: datetime = Field(..., description="Time of last modification")
 
-    # Enable pydantic serialization of standard SQLAlchemy objects (formerly orm_mode)
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class LeadDiscoverRequest(BaseModel):
@@ -78,6 +78,7 @@ class LeadDiscoverRequest(BaseModel):
     category: Optional[str] = Field(
         None, description="Target business category (e.g., 'Law offices')"
     )
+
 
 class LeadQualifyResponse(BaseModel):
     """Response schema for the qualify endpoint."""

@@ -35,10 +35,10 @@ class Lead(Base):
     latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
-    # Operational Outreach Pipeline State
-    # discovered, contacted, replied, in_pipeline, converted, ignored
+    # Unified lifecycle state (LeadStatus enum values stored as strings)
+    # Replaces the old free-text 'status' + fragmented 'review_status'/'is_qualified' fields.
     status: Mapped[str] = mapped_column(
-        String(50), default="discovered", index=True, nullable=False
+        String(50), default="DISCOVERED", index=True, nullable=False
     )
 
     # Operational remarks or system metadata notes

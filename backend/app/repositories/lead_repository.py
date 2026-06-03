@@ -2,6 +2,7 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.lead import Lead
+from app.models.enums import LeadStatus
 from app.repositories.base_repository import BaseRepository
 
 
@@ -28,7 +29,7 @@ class LeadRepository(BaseRepository[Lead]):
     async def get_by_status(
         self, db: AsyncSession, *, status: str, skip: int = 0, limit: int = 100
     ) -> List[Lead]:
-        """Fetches a list of leads filtered by their active pipeline status."""
+        """Fetches leads filtered by their unified lifecycle status."""
         query = (
             select(self.model)
             .where(self.model.status == status)
@@ -54,10 +55,13 @@ class LeadRepository(BaseRepository[Lead]):
     async def get_unprocessed_leads(
         self, db: AsyncSession, *, skip: int = 0, limit: int = 1000
     ) -> List[Lead]:
-        """Fetches leads that have not yet been evaluated by the qualification pipeline."""
+        """
+        Fetches leads that have not yet been evaluated by the qualification pipeline.
+        After the lifecycle refactor, 'unprocessed' means status == DISCOVERED.
+        """
         query = (
             select(self.model)
-            .where(self.model.review_status == None)
+            .where(self.model.status == LeadStatus.DISCOVERED)
             .offset(skip)
             .limit(limit)
         )
@@ -67,10 +71,14 @@ class LeadRepository(BaseRepository[Lead]):
     async def get_by_review_status(
         self, db: AsyncSession, *, review_status: str, skip: int = 0, limit: int = 100
     ) -> List[Lead]:
-        """Fetches leads filtered by their review status ('qualified', 'rejected', 'needs_review')."""
+        """
+        Fetches leads filtered by lifecycle status.
+        Parameter kept as 'review_status' for call-site backward compatibility;
+        internally this now filters the unified `status` column.
+        """
         query = (
             select(self.model)
-            .where(self.model.review_status == review_status)
+            .where(self.model.status == review_status)
             .offset(skip)
             .limit(limit)
         )
