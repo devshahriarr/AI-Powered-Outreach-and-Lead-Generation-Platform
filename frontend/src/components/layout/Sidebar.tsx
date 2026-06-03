@@ -72,7 +72,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       </div>
 
       {/* Navigation List */}
-      <nav className="flex-1 py-4 space-y-1 overflow-y-auto px-2">
+      <nav className={`flex-1 py-4 space-y-2 overflow-y-auto ${isCollapsed ? "px-1" : "px-2"}`}>
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -81,9 +81,13 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center transition-all duration-200 ${
+                isCollapsed
+                  ? "justify-center w-11 h-11 rounded-xl mx-auto"
+                  : "gap-3 px-3 py-2.5 rounded-lg text-sm font-medium"
+              } ${
                 isActive
-                  ? "bg-secondary text-white border-l-4 border-accent pl-2"
+                  ? "bg-secondary text-white border-l-4 border-accent"
                   : "text-white/65 hover:text-white hover:bg-secondary/40"
               }`}
               title={isCollapsed ? item.label : undefined}

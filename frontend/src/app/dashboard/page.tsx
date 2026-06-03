@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 
 export default function DashboardPage() {
-  // Mock data for the KPIs
+  // Mock data for the KPIs with route links
   const kpiData = [
     {
       title: "Total Leads",
@@ -29,6 +29,7 @@ export default function DashboardPage() {
       icon: Users,
       description: "Discovered raw contacts",
       trend: { value: "+12.4%", type: "up" as const },
+      href: "/leads",
     },
     {
       title: "Qualified Leads",
@@ -36,6 +37,7 @@ export default function DashboardPage() {
       icon: CheckCircle,
       description: "Catering relevant businesses",
       trend: { value: "+18.2%", type: "up" as const },
+      href: "/leads/qualified",
     },
     {
       title: "Active Campaigns",
@@ -43,6 +45,7 @@ export default function DashboardPage() {
       icon: Megaphone,
       description: "Configured outreach sequences",
       trend: { value: "+1", type: "up" as const },
+      href: "/campaigns",
     },
     {
       title: "Outreach Messages",
@@ -50,6 +53,7 @@ export default function DashboardPage() {
       icon: Mail,
       description: "Emails generated & sent",
       trend: { value: "+24.8%", type: "up" as const },
+      href: "/outreach",
     },
   ];
 
@@ -81,7 +85,7 @@ export default function DashboardPage() {
     },
   ];
 
-  // Mock activity feed logs
+  // Expanded mock activity feed logs to demonstrate scrolling
   const activityFeed = [
     {
       event: "Lead Discovered",
@@ -111,6 +115,41 @@ export default function DashboardPage() {
       time: "48 mins ago",
       type: "info",
     },
+    {
+      event: "Lead Discovered",
+      target: "Fidelity Offices Boston",
+      detail: "Boston, MA • Score: 94/100",
+      time: "1 hour ago",
+      type: "success",
+    },
+    {
+      event: "Email Opened",
+      target: "Microsoft New England",
+      detail: "Recipient opened outreach mail within 5 mins",
+      time: "2 hours ago",
+      type: "success",
+    },
+    {
+      event: "Outreach Agent Completed",
+      target: "Corporate Lunchbox Campaign",
+      detail: "Created 12 custom outreach templates",
+      time: "3 hours ago",
+      type: "info",
+    },
+    {
+      event: "Lead Discovered",
+      target: "Cambridge Biolabs Inc",
+      detail: "Cambridge, MA • Score: 78/100",
+      time: "4 hours ago",
+      type: "success",
+    },
+    {
+      event: "Agent Warning",
+      target: "Lead Discovery Agent",
+      detail: "Apify scraper encountered a retry limit. Re-routing.",
+      time: "5 hours ago",
+      type: "warning",
+    },
   ];
 
   return (
@@ -133,6 +172,33 @@ export default function DashboardPage() {
         </Link>
       </PageHeader>
 
+      {/* System Status Bar Strip */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 p-3 rounded-lg border border-border/40 bg-card/60 backdrop-blur-sm text-xs text-muted-foreground shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-muted-foreground/95">System Health:</span>
+          <span className="flex items-center gap-1.5 font-bold text-success">
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            Operational
+          </span>
+        </div>
+        <div className="h-4 w-px bg-border/60 hidden sm:block" />
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-muted-foreground/95">Agents Active:</span>
+          <span className="flex items-center gap-1.5 font-bold text-foreground">
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            2 / 3 Running
+          </span>
+        </div>
+        <div className="h-4 w-px bg-border/60 hidden sm:block" />
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-muted-foreground/95">Last Sync:</span>
+          <span className="font-bold text-foreground flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+            Just now
+          </span>
+        </div>
+      </div>
+
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {kpiData.map((kpi, index) => (
@@ -143,6 +209,7 @@ export default function DashboardPage() {
             icon={kpi.icon}
             description={kpi.description}
             trend={kpi.trend}
+            href={kpi.href}
           />
         ))}
       </div>
@@ -150,7 +217,7 @@ export default function DashboardPage() {
       {/* Main Command Dashboard Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left 2 Columns: AI Agent Automations Monitor */}
+        {/* Left 2 Columns: AI Agent Operations Monitor */}
         <div className="lg:col-span-2 space-y-6">
           <SectionCard
             title="Active AI Agent Operations"
@@ -233,73 +300,63 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right 1 Column: Platform Activity Feed */}
+        {/* Right 1 Column: Scrollable Activity Event Stream */}
         <div className="space-y-6">
           <SectionCard
             title="Real-Time Event Stream"
             description="Live trace of database operations and agent updates."
             actions={
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-semibold">
-                <Clock className="w-3 h-3 animate-pulse" />
+                <Clock className="w-3.5 h-3.5 animate-pulse text-success" />
                 Live
               </span>
             }
           >
-            <div className="flow-root">
-              <ul className="-mb-8">
+            <div className="overflow-y-auto max-h-[380px] pr-2 space-y-4 scrollbar-thin">
+              <ul className="space-y-4">
                 {activityFeed.map((activity, index) => (
-                  <li key={index}>
-                    <div className="relative pb-8">
-                      {index !== activityFeed.length - 1 ? (
-                        <span
-                          className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-border/40"
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                      <div className="relative flex space-x-3">
-                        <div>
-                          <span
-                            className={`h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-card ${
-                              activity.type === "success"
-                                ? "bg-success/10 text-success"
-                                : activity.type === "warning"
-                                ? "bg-warning/10 text-warning"
-                                : "bg-blue-500/10 text-blue-500"
-                            }`}
-                          >
-                            <Clock className="w-4 h-4" />
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0 pt-1.5">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-xs font-bold text-foreground">
-                              {activity.event}
-                            </p>
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                              {activity.time}
-                            </span>
-                          </div>
-                          <p className="text-xs text-foreground/80 font-medium truncate mt-0.5">
-                            {activity.target}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                            {activity.detail}
-                          </p>
-                        </div>
+                  <li key={index} className="flex gap-3">
+                    <span
+                      className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                        activity.type === "success"
+                          ? "bg-success/10 text-success"
+                          : activity.type === "warning"
+                          ? "bg-warning/10 text-warning"
+                          : "bg-blue-500/10 text-blue-500"
+                      }`}
+                    >
+                      <Clock className="w-4 h-4" />
+                    </span>
+                    <div className="flex-grow min-w-0 pt-0.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-bold text-foreground truncate">
+                          {activity.event}
+                        </p>
+                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                          {activity.time}
+                        </span>
                       </div>
+                      <p className="text-xs text-foreground/80 font-medium truncate mt-0.5">
+                        {activity.target}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                        {activity.detail}
+                      </p>
                     </div>
                   </li>
                 ))}
               </ul>
             </div>
             
-            <Link
-              href="/analytics"
-              className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 border border-border/60 hover:bg-muted text-xs font-semibold rounded-lg text-foreground hover:text-accent transition-all duration-200"
-            >
-              View Full Analytics
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            <div className="mt-4 pt-3 border-t border-border/20">
+              <Link
+                href="/analytics"
+                className="flex items-center justify-center gap-1.5 w-full py-2 border border-border/60 hover:bg-muted text-xs font-semibold rounded-lg text-foreground hover:text-accent transition-all duration-200"
+              >
+                View Full Analytics
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </SectionCard>
         </div>
         

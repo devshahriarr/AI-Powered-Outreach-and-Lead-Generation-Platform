@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import { LucideIcon, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import Link from "next/link";
 
 interface KpiCardProps {
   title: string;
@@ -10,13 +13,21 @@ interface KpiCardProps {
     value: string;
     type: "up" | "down" | "neutral";
   };
+  href?: string;
+  onClick?: () => void;
 }
 
-export function KpiCard({ title, value, icon: Icon, description, trend }: KpiCardProps) {
-  return (
-    <div className="rounded-xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-md transition-all duration-200 group">
+export function KpiCard({ title, value, icon: Icon, description, trend, href, onClick }: KpiCardProps) {
+  const isInteractive = !!(href || onClick);
+
+  const CardContent = (
+    <div className={`rounded-xl border border-border/40 bg-card p-5 shadow-sm transition-all duration-300 group ${
+      isInteractive 
+        ? "cursor-pointer hover:shadow-md hover:border-accent/30 hover:-translate-y-0.5 active:translate-y-0"
+        : ""
+    }`}>
       <div className="flex items-start justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors duration-200">
           {title}
         </span>
         <div className="p-2 rounded-lg bg-muted text-muted-foreground group-hover:text-accent group-hover:bg-accent/10 transition-colors duration-200">
@@ -55,4 +66,22 @@ export function KpiCard({ title, value, icon: Icon, description, trend }: KpiCar
       )}
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block no-underline">
+        {CardContent}
+      </Link>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button onClick={onClick} className="block w-full text-left bg-transparent border-0 p-0 focus:outline-none">
+        {CardContent}
+      </button>
+    );
+  }
+
+  return CardContent;
 }

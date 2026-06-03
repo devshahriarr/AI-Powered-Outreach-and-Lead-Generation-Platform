@@ -60,49 +60,23 @@ export function AgentsPanel({ isCollapsed = false }: AgentsPanelProps) {
   }
 
   return (
-    <div className="p-4 border-t border-border/40">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+    <div className="p-4 border-t border-border/10">
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">
           AI Automations
         </span>
-        <span className="flex h-2 w-2 relative">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-        </span>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {agents.map((agent, index) => {
-          const Icon = agent.icon;
           return (
-            <div
-              key={index}
-              className="p-2.5 rounded-lg bg-secondary/40 dark:bg-secondary/20 hover:bg-secondary/60 dark:hover:bg-secondary/30 transition-all duration-200 border border-border/20 group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 rounded-md bg-background text-muted-foreground group-hover:text-accent transition-colors duration-200">
-                  <Icon className="w-3.5 h-3.5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-foreground truncate">
-                      {agent.name}
-                    </p>
-                    <span className="flex items-center gap-1">
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${agent.color} ${
-                          agent.pulse ? "animate-pulse-slow shadow-[0_0_8px_#10B981]" : ""
-                        }`}
-                      />
-                      <span className="text-[9px] text-muted-foreground uppercase font-semibold">
-                        {agent.status}
-                      </span>
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                    {agent.description}
-                  </p>
-                </div>
+            <div key={index} className="flex items-center justify-between text-xs py-0.5">
+              <div className="flex items-center gap-2 text-white/70">
+                <span className={`w-1.5 h-1.5 rounded-full ${agent.color === "bg-success" ? "bg-success" : "bg-neutral-500"} ${agent.pulse ? "animate-pulse-slow" : ""}`} />
+                <span className="truncate max-w-[140px] font-medium">{agent.name.replace(" Agent", "")}</span>
               </div>
+              <span className={`text-[10px] font-mono font-semibold ${agent.color === "bg-success" ? "text-success" : "text-white/40"}`}>
+                {agent.status}
+              </span>
             </div>
           );
         })}

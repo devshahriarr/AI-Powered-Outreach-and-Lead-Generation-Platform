@@ -46,7 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <TopBar onMenuToggle={() => setIsMobileMenuOpen(true)} />
 
         {/* Content Workspace */}
-        <main className="flex-grow p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-grow p-4 md:p-6 lg:p-8 max-w-[1600px] w-full mx-auto">
           {children}
         </main>
       </div>
