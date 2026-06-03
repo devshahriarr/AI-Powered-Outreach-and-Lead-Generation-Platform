@@ -21,6 +21,8 @@ interface LeadTableProps {
   globalFilter: string;
   onRowClick: (lead: Lead) => void;
   showReasonColumn?: boolean;
+  enableSelection?: boolean;
+  onSelectionChange?: (selected: Lead[]) => void;
 }
 
 const columnHelper = createColumnHelper<Lead>();
@@ -49,12 +51,52 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-export function LeadTable({ data, globalFilter, onRowClick, showReasonColumn = false }: LeadTableProps) {
+export function LeadTable({
+  data,
+  globalFilter,
+  onRowClick,
+  showReasonColumn = false,
+  enableSelection = false,
+  onSelectionChange,
+}: LeadTableProps) {
   const [sorting, setSorting] = useState<SortingState>([{ id: "created_at", desc: true }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
 
   const columns = useMemo(() => {
     const cols = [
+      ...(enableSelection
+        ? [
+            columnHelper.display({
+              id: "select",
+              header: ({ table }) => (
+                <input
+                  type="checkbox"
+                  checked={table.getIsAllRowsSelected()}
+                  ref={(input) => {
+                    if (input) {
+                      input.indeterminate = table.getIsSomeRowsSelected();
+                    }
+                  }}
+                  onChange={table.getToggleAllRowsSelectedHandler()}
+                  className="rounded border-border bg-background text-accent focus:ring-accent/40 w-4 h-4 cursor-pointer accent-accent"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ),
+              cell: ({ row }) => (
+                <input
+                  type="checkbox"
+                  checked={row.getIsSelected()}
+                  disabled={!row.getCanSelect()}
+                  onChange={row.getToggleSelectedHandler()}
+                  className="rounded border-border bg-background text-accent focus:ring-accent/40 w-4 h-4 cursor-pointer accent-accent"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ),
+              size: 40,
+            }),
+          ]
+        : []),
       columnHelper.accessor("name", {
         header: "Business Name",
         cell: (info) => (
@@ -147,14 +189,16 @@ export function LeadTable({ data, globalFilter, onRowClick, showReasonColumn = f
       }),
     ];
     return cols;
-  }, [onRowClick, showReasonColumn]);
+  }, [onRowClick, showReasonColumn, enableSelection]);
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, columnFilters, globalFilter },
+    state: { sorting, columnFilters, globalFilter, rowSelection },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onRowSelectionChange: setRowSelection,
+    enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -162,6 +206,14 @@ export function LeadTable({ data, globalFilter, onRowClick, showReasonColumn = f
     initialState: { pagination: { pageSize: 25 } },
     globalFilterFn: "includesString",
   });
+
+  // Call onSelectionChange whenever selection state updates
+  React.useEffect(() => {
+    if (onSelectionChange) {
+      const selectedRows = table.getSelectedRowModel().flatRows.map((r) => r.original);
+      onSelectionChange(selectedRows);
+    }
+  }, [rowSelection, onSelectionChange]);
 
   const { pageIndex, pageSize } = table.getState().pagination;
   const totalRows = table.getFilteredRowModel().rows.length;

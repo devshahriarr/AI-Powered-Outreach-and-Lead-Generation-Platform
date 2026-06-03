@@ -110,3 +110,116 @@ export interface LeadListParams {
   skip?: number;
   limit?: number;
 }
+
+// ─── Campaign Status & Types ──────────────────────────────────────────────────
+
+export const CampaignStatus = {
+  DRAFT: "draft",
+  ACTIVE: "active",
+  PAUSED: "paused",
+  COMPLETED: "completed",
+  ARCHIVED: "archived",
+} as const;
+
+export type CampaignStatusType = (typeof CampaignStatus)[keyof typeof CampaignStatus];
+
+export const CAMPAIGN_STATUS_LABELS: Record<CampaignStatusType, string> = {
+  draft: "Draft",
+  active: "Active",
+  paused: "Paused",
+  completed: "Completed",
+  archived: "Archived",
+};
+
+export interface Campaign {
+  id: number;
+  name: string;
+  campaign_type: string;
+  target_business_type: string;
+  offer: string;
+  status: CampaignStatusType;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampaignCreate {
+  name: string;
+  campaign_type: string;
+  target_business_type: string;
+  offer: string;
+  status?: CampaignStatusType;
+}
+
+export interface CampaignUpdate {
+  name?: string;
+  campaign_type?: string;
+  target_business_type?: string;
+  offer?: string;
+  status?: CampaignStatusType;
+}
+
+// ─── Campaign Settings ────────────────────────────────────────────────────────
+
+export interface CampaignSettings {
+  id: number;
+  campaign_id?: number;
+  restaurant_name: string;
+  restaurant_location: string;
+  sender_name: string;
+  reply_email: string;
+  offer: string;
+  call_to_action: string;
+  brand_voice: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampaignSettingsUpdate {
+  restaurant_name?: string;
+  restaurant_location?: string;
+  sender_name?: string;
+  reply_email?: string;
+  offer?: string;
+  call_to_action?: string;
+  brand_voice?: string | null;
+}
+
+// ─── Outreach Messages ────────────────────────────────────────────────────────
+
+export type MessageType = "cold_outreach" | "followup_1" | "followup_2" | "final_followup";
+
+export const MESSAGE_TYPE_LABELS: Record<MessageType, string> = {
+  cold_outreach: "Cold Outreach",
+  followup_1: "Follow-up 1",
+  followup_2: "Follow-up 2",
+  final_followup: "Final Follow-up",
+};
+
+export type MessageStatusType = "draft" | "generated" | "edited" | "approved" | "sent" | "failed" | "replied";
+
+export const MESSAGE_STATUS_LABELS: Record<MessageStatusType, string> = {
+  draft: "Draft",
+  generated: "Generated",
+  edited: "Edited",
+  approved: "Approved",
+  sent: "Sent",
+  failed: "Failed",
+  replied: "Replied",
+};
+
+export interface OutreachMessage {
+  id: number;
+  lead_id: number;
+  campaign_id: number;
+  message_type: string;
+  subject: string;
+  body: string;
+  cta: string;
+  generated_by: string;
+  model_name: string;
+  status: MessageStatusType;
+  review_notes: string | null;
+  created_at: string;
+  updated_at: string;
+  lead?: Lead; // Joined for display helper
+}

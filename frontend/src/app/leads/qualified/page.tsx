@@ -10,6 +10,7 @@ import { LeadDetailsDrawer } from "@/components/leads/LeadDetailsDrawer";
 import { useQualifiedLeads, useStats } from "@/hooks/useLeads";
 import { Lead } from "@/types";
 import { BadgeCheck, AlertCircle, Download, TrendingUp } from "lucide-react";
+import { AssignCampaignModal } from "@/components/campaigns/AssignCampaignModal";
 
 export default function QualifiedLeadsPage() {
   const { data: leads, isLoading, isError, error, refetch } = useQualifiedLeads();
@@ -17,6 +18,11 @@ export default function QualifiedLeadsPage() {
   const [search, setSearch] = useState("");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Campaign assignment state
+  const [selectedLeads, setSelectedLeads] = useState<Lead[]>([]);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [tableKey, setTableKey] = useState(0);
 
   const openDrawer = (lead: Lead) => { setSelectedLead(lead); setDrawerOpen(true); };
   const closeDrawer = () => { setDrawerOpen(false); setTimeout(() => setSelectedLead(null), 300); };
@@ -112,10 +118,42 @@ export default function QualifiedLeadsPage() {
           icon={BadgeCheck}
         />
       ) : (
-        <LeadTable data={filtered} globalFilter={search} onRowClick={openDrawer} />
+        <LeadTable
+          key={tableKey}
+          data={filtered}
+          globalFilter={search}
+          onRowClick={openDrawer}
+          enableSelection
+          onSelectionChange={setSelectedLeads}
+        />
       )}
 
       <LeadDetailsDrawer lead={selectedLead} open={drawerOpen} onClose={closeDrawer} />
+
+      {/* Floating Bulk Action Bar */}
+      {selectedLeads.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 bg-slate-900/95 text-white px-5 py-3 rounded-xl shadow-lg border border-slate-800 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <span className="text-xs font-semibold">
+            {selectedLeads.length} lead{selectedLeads.length > 1 ? "s" : ""} selected
+          </span>
+          <button
+            onClick={() => setAssignModalOpen(true)}
+            className="px-3.5 py-1.5 bg-accent hover:bg-accent/90 text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm"
+          >
+            Assign to Campaign
+          </button>
+        </div>
+      )}
+
+      <AssignCampaignModal
+        isOpen={assignModalOpen}
+        onClose={() => setAssignModalOpen(false)}
+        selectedLeadIds={selectedLeads.map((l) => l.id)}
+        onSuccess={() => {
+          setTableKey((k) => k + 1);
+          setSelectedLeads([]);
+        }}
+      />
     </div>
   );
 }
