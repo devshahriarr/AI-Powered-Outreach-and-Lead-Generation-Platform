@@ -16,46 +16,65 @@ import {
   Sparkles,
   ArrowRight,
   TrendingUp,
-  Clock
+  Clock,
+  AlertCircle,
+  XCircle,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
+import { useStats } from "@/hooks/useStats";
 
 export default function DashboardPage() {
-  // Mock data for the KPIs with route links
+  const { data: stats, isLoading, isError, dataUpdatedAt, refetch, isRefetching } = useStats();
+
   const kpiData = [
     {
       title: "Total Leads",
-      value: "1,482",
+      value: stats?.leads.total ?? "-",
       icon: Users,
       description: "Discovered raw contacts",
-      trend: { value: "+12.4%", type: "up" as const },
       href: "/leads",
     },
     {
       title: "Qualified Leads",
-      value: "843",
+      value: stats?.leads.qualified ?? "-",
       icon: CheckCircle,
       description: "Catering relevant businesses",
-      trend: { value: "+18.2%", type: "up" as const },
       href: "/leads/qualified",
     },
     {
-      title: "Active Campaigns",
-      value: "5",
+      title: "Review Required",
+      value: stats?.leads.review_required ?? "-",
+      icon: AlertCircle,
+      description: "Borderline scores to check",
+      href: "/leads?status=REVIEW_REQUIRED",
+    },
+    {
+      title: "Rejected Leads",
+      value: stats?.leads.rejected ?? "-",
+      icon: XCircle,
+      description: "Failed qualification",
+      href: "/leads?status=REJECTED",
+    },
+    {
+      title: "Campaigns",
+      value: stats?.campaigns.total ?? "-",
       icon: Megaphone,
       description: "Configured outreach sequences",
-      trend: { value: "+1", type: "up" as const },
       href: "/campaigns",
     },
     {
-      title: "Outreach Messages",
-      value: "612",
+      title: "Generated Emails",
+      value: stats?.outreach_messages.total ?? "-",
       icon: Mail,
-      description: "Emails generated & sent",
-      trend: { value: "+24.8%", type: "up" as const },
+      description: "Drafts and sent emails",
       href: "/outreach",
     },
   ];
+
+  const lastSyncTime = dataUpdatedAt
+    ? new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : "Syncing...";
 
   // Mock data for running agents
   const agentDetails = [
@@ -159,8 +178,12 @@ export default function DashboardPage() {
         title="AI Outreach Command Center"
         description="Monitor lead discovery, qualification, campaigns and outreach activity from a single workspace."
       >
-        <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition-all duration-200">
-          <RefreshCw className="w-3.5 h-3.5" />
+        <button 
+          onClick={() => refetch()}
+          disabled={isRefetching || isLoading}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted disabled:opacity-50 text-xs font-semibold text-foreground transition-all duration-200"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} />
           Refresh Stats
         </button>
         <Link
@@ -194,24 +217,35 @@ export default function DashboardPage() {
           <span className="font-semibold text-muted-foreground/95">Last Sync:</span>
           <span className="font-bold text-foreground flex items-center gap-1">
             <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-            Just now
+            {lastSyncTime}
           </span>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {kpiData.map((kpi, index) => (
-          <KpiCard
-            key={index}
-            title={kpi.title}
-            value={kpi.value}
-            icon={kpi.icon}
-            description={kpi.description}
-            trend={kpi.trend}
-            href={kpi.href}
-          />
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {isLoading ? (
+          <div className="col-span-full py-12 flex flex-col items-center justify-center text-muted-foreground">
+            <Loader2 className="w-8 h-8 animate-spin text-accent mb-4" />
+            <p className="text-sm font-medium">Loading aggregated statistics...</p>
+          </div>
+        ) : isError ? (
+          <div className="col-span-full py-12 flex flex-col items-center justify-center text-destructive">
+            <AlertCircle className="w-8 h-8 mb-4 opacity-80" />
+            <p className="text-sm font-medium">Failed to load statistics. Please try refreshing.</p>
+          </div>
+        ) : (
+          kpiData.map((kpi, index) => (
+            <KpiCard
+              key={index}
+              title={kpi.title}
+              value={kpi.value}
+              icon={kpi.icon}
+              description={kpi.description}
+              href={kpi.href}
+            />
+          ))
+        )}
       </div>
 
       {/* Main Command Dashboard Layout */}

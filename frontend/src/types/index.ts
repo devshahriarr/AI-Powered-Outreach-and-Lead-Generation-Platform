@@ -82,6 +82,7 @@ export interface StatsResponse {
     qualified: number;
     review_required: number;
     contacted: number;
+    rejected: number;
   };
   campaigns: {
     total: number;

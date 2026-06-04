@@ -46,6 +46,11 @@ async def get_stats(db: AsyncSession = Depends(get_db_session)) -> dict:
     )
     contacted_leads: int = contacted_result.scalar_one()
 
+    rejected_result = await db.execute(
+        select(func.count()).select_from(Lead).where(Lead.status == LeadStatus.REJECTED)
+    )
+    rejected_leads: int = rejected_result.scalar_one()
+
     # --- Campaign count ---
     campaigns_result = await db.execute(select(func.count()).select_from(Campaign))
     campaigns: int = campaigns_result.scalar_one()
@@ -84,6 +89,7 @@ async def get_stats(db: AsyncSession = Depends(get_db_session)) -> dict:
             "qualified": qualified_leads,
             "review_required": review_required,
             "contacted": contacted_leads,
+            "rejected": rejected_leads,
         },
         "campaigns": {
             "total": campaigns,
