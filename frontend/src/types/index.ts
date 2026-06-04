@@ -223,3 +223,15 @@ export interface OutreachMessage {
   updated_at: string;
   lead?: Lead; // Joined for display helper
 }
+
+export interface OutreachMessageUpdate {
+  subject?: string;
+  body?: string;
+  cta?: string;
+  review_notes?: string | null;
+}
+
+export interface GenerateEmailRequest {
+  campaign_id: number;
+  message_type: MessageType;
+}
