@@ -939,7 +939,7 @@ The `outreach_message.py` schema defines `RejectMessageRequest` but no backend r
 │ Backend Architecture     │  ✅ Excellent — Clean layered design  │
 │ Frontend Architecture    │  ✅ Good — TanStack Query, typed DTOs │
 │ Database Design          │  🟡 Good, with CampaignSettings issue │
-│ API Coverage             │  ✅ Full CRUD on all core entities     │
+│ API Coverage             │  ✅ Full CRUD on all core entities    │
 │ Authentication           │  🔴 MISSING — Critical gap            │
 │ AI Integration (OpenAI)  │  ✅ Working structured output         │
 │ Lead Discovery (Apify)   │  ✅ Working with fallback             │
@@ -947,7 +947,7 @@ The `outreach_message.py` schema defines `RejectMessageRequest` but no backend r
 │ Frontend Pages           │  🟡 3/10 are placeholder EmptyStates  │
 │ Testing                  │  🔴 ~10% coverage (leads only)        │
 │ TypeScript Build         │  ✅ Zero errors, 15 routes pass       │
-│ Docker Support           │  🟡 DB + Backend only, no Frontend     │
+│ Docker Support           │  🟡 DB + Backend only, no Frontend    │
 │ Documentation            │  🟡 README + AGENTS.md exist          │
 └──────────────────────────┴──────────────────────────────────────┘
 ```

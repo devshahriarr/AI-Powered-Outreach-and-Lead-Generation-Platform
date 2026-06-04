@@ -5,7 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import EntityNotFoundError
 from app.db.session import get_db_session
 from app.schemas.campaign import CampaignCreate, CampaignResponse, CampaignUpdate
+from app.schemas.lead import LeadResponse
+from app.schemas.campaign_assignment import CampaignAssignmentCreate, CampaignAssignmentResponse
 from app.services.campaign_service import campaign_service
+from app.services.campaign_assignment_service import campaign_assignment_service
 
 router = APIRouter()
 logger = logging.getLogger("app.api.campaigns")
@@ -100,3 +103,50 @@ async def delete_campaign(
     deleted = await campaign_service.repository.remove(db, id=campaign_id)
     logger.info("Campaign %d deleted.", campaign_id)
     return deleted
+
+
+@router.post(
+    "/{campaign_id}/assign-leads",
+    response_model=List[CampaignAssignmentResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Assign Leads to Campaign",
+    description="Assigns multiple leads to a campaign.",
+)
+async def assign_leads(
+    campaign_id: int,
+    payload: CampaignAssignmentCreate,
+    db: AsyncSession = Depends(get_db_session),
+) -> List[CampaignAssignmentResponse]:
+    assignments = await campaign_assignment_service.assign_leads(
+        db, campaign_id=campaign_id, lead_ids=payload.lead_ids
+    )
+    return assignments
+
+
+@router.get(
+    "/{campaign_id}/leads",
+    response_model=List[LeadResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Get Assigned Leads",
+    description="Retrieves the list of leads assigned to this campaign.",
+)
+async def get_campaign_leads(
+    campaign_id: int,
+    db: AsyncSession = Depends(get_db_session),
+) -> List[LeadResponse]:
+    return await campaign_assignment_service.get_campaign_leads(db, campaign_id=campaign_id)
+
+
+@router.delete(
+    "/{campaign_id}/leads/{lead_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove Lead from Campaign",
+    description="Unassigns a specific lead from a campaign.",
+)
+async def remove_campaign_lead(
+    campaign_id: int,
+    lead_id: int,
+    db: AsyncSession = Depends(get_db_session),
+):
+    await campaign_assignment_service.remove_lead(db, campaign_id=campaign_id, lead_id=lead_id)
+    return None

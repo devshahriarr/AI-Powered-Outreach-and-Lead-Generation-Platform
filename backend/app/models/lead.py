@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy import Float, Integer, String, Text, Boolean
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 
@@ -52,3 +52,11 @@ class Lead(Base):
     cleaned_website: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     cleaned_phone: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     review_status: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+
+    # Many-to-many relationship with campaigns
+    campaign_assignments: Mapped[list["LeadCampaignAssignment"]] = relationship(
+        "LeadCampaignAssignment", back_populates="lead", cascade="all, delete-orphan"
+    )
+
+# Resolve forward reference
+from app.models.lead_campaign_assignment import LeadCampaignAssignment  # noqa: E402, F401

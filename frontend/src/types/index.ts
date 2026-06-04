@@ -158,11 +158,14 @@ export interface CampaignUpdate {
   status?: CampaignStatusType;
 }
 
-// ─── Campaign Settings ────────────────────────────────────────────────────────
+export interface CampaignAssignmentCreate {
+  lead_ids: number[];
+}
 
-export interface CampaignSettings {
+// ─── Platform Settings ────────────────────────────────────────────────────────
+
+export interface PlatformSettings {
   id: number;
-  campaign_id?: number;
   restaurant_name: string;
   restaurant_location: string;
   sender_name: string;
@@ -174,7 +177,7 @@ export interface CampaignSettings {
   updated_at: string;
 }
 
-export interface CampaignSettingsUpdate {
+export interface PlatformSettingsUpdate {
   restaurant_name?: string;
   restaurant_location?: string;
   sender_name?: string;

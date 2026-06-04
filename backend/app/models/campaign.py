@@ -27,14 +27,6 @@ class Campaign(Base):
         String(50), default="draft", nullable=False, index=True
     )
 
-    # One-to-one relationship to campaign-level sender/offer settings
-    settings: Mapped[Optional["CampaignSettings"]] = relationship(
-        "CampaignSettings",
-        back_populates="campaign",
-        uselist=False,
-        cascade="all, delete-orphan"
-    )
-
     # One-to-many: all outreach messages generated under this campaign
     outreach_messages: Mapped[list["LeadOutreachMessage"]] = relationship(  # type: ignore[name-defined]
         "LeadOutreachMessage",
@@ -42,46 +34,12 @@ class Campaign(Base):
         cascade="all, delete-orphan"
     )
 
-
-class CampaignSettings(Base):
-    """
-    Sender identity and messaging context for a Campaign.
-    Provides the personalization tokens injected into AI-generated emails.
-    """
-
-    # Foreign key binding to parent campaign
-    campaign_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("campaign.id", ondelete="CASCADE"),
-        nullable=False,
-        unique=True,
-        index=True
+    # Many-to-many relationship with leads
+    lead_assignments: Mapped[list["LeadCampaignAssignment"]] = relationship(
+        "LeadCampaignAssignment", back_populates="campaign", cascade="all, delete-orphan"
     )
 
-    # Name of the catering restaurant making the outreach
-    restaurant_name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    # Location of the restaurant (used to establish local credibility)
-    restaurant_location: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    # Name of the person sending the email
-    sender_name: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    # Reply-to email address for responses
-    reply_email: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    # The specific offer to highlight in the email body
-    offer: Mapped[str] = mapped_column(Text, nullable=False)
-
-    # Clear call-to-action (e.g. 'Schedule a free tasting')
-    call_to_action: Mapped[str] = mapped_column(Text, nullable=False)
-
-    # Optional tone guidance for AI generation (e.g. 'Friendly, professional, concise')
-    brand_voice: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-
-    # Back-reference to parent campaign
-    campaign: Mapped["Campaign"] = relationship("Campaign", back_populates="settings")
-
-
-# Resolve forward reference for LeadOutreachMessage
+# Resolve forward reference for LeadOutreachMessage and LeadCampaignAssignment
 from app.models.lead_outreach_message import LeadOutreachMessage  # noqa: E402, F401
+from app.models.lead_campaign_assignment import LeadCampaignAssignment  # noqa: E402, F401

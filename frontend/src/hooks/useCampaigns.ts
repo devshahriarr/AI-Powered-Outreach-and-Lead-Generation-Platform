@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { campaignsService } from "@/services/campaigns";
-import { CampaignCreate, CampaignUpdate, CampaignSettingsUpdate } from "@/types";
+import { CampaignCreate, CampaignUpdate, CampaignAssignmentCreate } from "@/types";
 
 export const campaignKeys = {
   all: ["campaigns"] as const,
   lists: () => [...campaignKeys.all, "list"] as const,
   list: (status?: string) => [...campaignKeys.lists(), status ?? "all"] as const,
   detail: (id: number) => [...campaignKeys.all, "detail", id] as const,
-  settings: () => ["campaign-settings"] as const,
+  leads: (campaignId: number) => [...campaignKeys.all, "leads", campaignId] as const,
   messages: (campaignId: number) => [...campaignKeys.all, "messages", campaignId] as const,
   stats: () => ["stats"] as const, // Share stats query invalidation
 };
@@ -31,14 +31,7 @@ export function useCampaign(id: number) {
   });
 }
 
-/** Hook to fetch the global platform campaign settings singleton */
-export function useCampaignSettings() {
-  return useQuery({
-    queryKey: campaignKeys.settings(),
-    queryFn: () => campaignsService.fetchCampaignSettings(),
-    staleTime: 60_000,
-  });
-}
+
 
 /** Hook to fetch outreach messages for a specific campaign */
 export function useCampaignMessages(campaignId: number) {
@@ -89,14 +82,39 @@ export function useDeleteCampaign() {
   });
 }
 
-/** Hook to update the global campaign settings singleton */
-export function useUpdateCampaignSettings() {
+/** Hook to fetch leads assigned to a specific campaign */
+export function useCampaignLeads(campaignId: number) {
+  return useQuery({
+    queryKey: campaignKeys.leads(campaignId),
+    queryFn: () => campaignsService.fetchCampaignLeads(campaignId),
+    staleTime: 60_000,
+  });
+}
+
+/** Hook to assign leads to a campaign */
+export function useAssignLeadsToCampaign() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CampaignSettingsUpdate) => campaignsService.updateCampaignSettings(data),
+    mutationFn: ({ campaignId, data }: { campaignId: number; data: CampaignAssignmentCreate }) =>
+      campaignsService.assignLeadsToCampaign(campaignId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: campaignKeys.leads(variables.campaignId) });
+      queryClient.invalidateQueries({ queryKey: campaignKeys.detail(variables.campaignId) });
+    },
+  });
+}
+
+/** Hook to remove a lead from a campaign */
+export function useRemoveCampaignLead(campaignId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (leadId: number) =>
+      campaignsService.removeCampaignLead(campaignId, leadId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: campaignKeys.settings() });
+      queryClient.invalidateQueries({ queryKey: campaignKeys.leads(campaignId) });
+      queryClient.invalidateQueries({ queryKey: campaignKeys.detail(campaignId) });
     },
   });
 }

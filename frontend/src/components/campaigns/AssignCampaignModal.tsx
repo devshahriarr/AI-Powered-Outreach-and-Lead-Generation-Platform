@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { X, Loader2, Megaphone, Check } from "lucide-react";
-import { useCampaigns } from "@/hooks/useCampaigns";
+import { useCampaigns, useAssignLeadsToCampaign } from "@/hooks/useCampaigns";
 import { useToast } from "@/providers/ToastProvider";
 
 interface AssignCampaignModalProps {
@@ -19,15 +19,15 @@ export function AssignCampaignModal({
   onSuccess,
 }: AssignCampaignModalProps) {
   const { data: campaigns, isLoading, isError } = useCampaigns();
+  const assignMutation = useAssignLeadsToCampaign();
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
-  const [assigning, setAssigning] = useState(false);
   const { success, error } = useToast();
 
   if (!isOpen) return null;
 
   const activeCampaigns = campaigns?.filter(c => c.status !== "archived") ?? [];
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (!selectedCampaignId) {
       error("Please select a campaign first.");
       return;
@@ -36,21 +36,26 @@ export function AssignCampaignModal({
     const campaign = campaigns?.find(c => String(c.id) === selectedCampaignId);
     if (!campaign) return;
 
-    setAssigning(true);
-
-    // Simulate API delay for bulk assignment endpoint
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    setAssigning(false);
-    success(
-      `Successfully assigned ${selectedLeadIds.length} lead${
-        selectedLeadIds.length > 1 ? "s" : ""
-      } to campaign "${campaign.name}"!`
+    assignMutation.mutate(
+      { campaignId: campaign.id, data: { lead_ids: selectedLeadIds } },
+      {
+        onSuccess: () => {
+          success(
+            `Successfully assigned ${selectedLeadIds.length} lead${
+              selectedLeadIds.length > 1 ? "s" : ""
+            } to campaign "${campaign.name}"!`
+          );
+          if (onSuccess) onSuccess();
+          onClose();
+        },
+        onError: (err: any) => {
+          error(err?.message || "Failed to assign leads to campaign.");
+        }
+      }
     );
-
-    if (onSuccess) onSuccess();
-    onClose();
   };
+
+  const isAssigning = assignMutation.isPending;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm transition-all duration-300">
@@ -131,10 +136,10 @@ export function AssignCampaignModal({
           </button>
           <button
             onClick={handleConfirm}
-            disabled={assigning || !selectedCampaignId}
+            disabled={isAssigning || !selectedCampaignId}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-accent hover:bg-accent/90 disabled:bg-accent/70 text-white rounded-lg text-xs font-semibold shadow-sm transition-all duration-200 cursor-pointer"
           >
-            {assigning ? (
+            {isAssigning ? (
               <Loader2 className="w-3 h-3 animate-spin" />
             ) : (
               <Check className="w-3 h-3" />

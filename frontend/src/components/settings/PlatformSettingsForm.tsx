@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useCampaignSettings, useUpdateCampaignSettings } from "@/hooks/useCampaigns";
+import { usePlatformSettings, useUpdatePlatformSettings } from "@/hooks/useSettings";
 import { useToast } from "@/providers/ToastProvider";
 import { Loader2 } from "lucide-react";
 
@@ -20,9 +20,9 @@ const settingsSchema = z.object({
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
-export function CampaignSettingsForm() {
-  const { data: settings, isLoading, isError, error } = useCampaignSettings();
-  const updateMutation = useUpdateCampaignSettings();
+export function PlatformSettingsForm() {
+  const { data: settings, isLoading, isError, error } = usePlatformSettings();
+  const updateMutation = useUpdatePlatformSettings();
   const { success, error: toastError } = useToast();
 
   const {

@@ -6,11 +6,12 @@ import {
   useCampaign,
   useDeleteCampaign,
   useCampaignMessages,
+  useCampaignLeads,
 } from "@/hooks/useCampaigns";
 import { useQualifiedLeads } from "@/hooks/useLeads";
 import { CampaignHeader } from "@/components/campaigns/CampaignHeader";
 import { CampaignStatsCards } from "@/components/campaigns/CampaignStatsCards";
-import { CampaignSettingsForm } from "@/components/campaigns/CampaignSettingsForm";
+
 import { useToast } from "@/providers/ToastProvider";
 import {
   LayoutDashboard,
@@ -26,7 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-type TabId = "overview" | "leads" | "messages" | "settings";
+type TabId = "overview" | "leads" | "messages";
 
 export default function CampaignDetailsPage() {
   const params = useParams();
@@ -39,7 +40,7 @@ export default function CampaignDetailsPage() {
   // Queries
   const { data: campaign, isLoading: loadingCampaign, isError: isCampaignError, error: campaignError } = useCampaign(campaignId);
   const { data: messages, isLoading: loadingMessages } = useCampaignMessages(campaignId);
-  const { data: qualifiedLeads, isLoading: loadingLeads } = useQualifiedLeads();
+  const { data: campaignLeads, isLoading: loadingCampaignLeads } = useCampaignLeads(campaignId);
   const deleteMutation = useDeleteCampaign();
 
   const handleDelete = () => {
@@ -95,15 +96,14 @@ export default function CampaignDetailsPage() {
   const approvedCount = messages?.filter((m) => m.status === "approved").length ?? 0;
   const sentCount = messages?.filter((m) => m.status === "sent").length ?? 0;
   
-  // Prepare simulation of assigned leads (simulate 4 qualified leads or use qualified leads size)
-  const assignedLeadsList = qualifiedLeads ? qualifiedLeads.slice(0, 5) : [];
+  // Use real assigned leads
+  const assignedLeadsList = campaignLeads ?? [];
   const leadsCount = assignedLeadsList.length;
 
   const tabs = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "leads", label: "Assigned Leads", icon: Users },
     { id: "messages", label: "Outreach Messages", icon: Mail },
-    { id: "settings", label: "Settings", icon: Settings },
   ] as const;
 
   return (
@@ -117,7 +117,7 @@ export default function CampaignDetailsPage() {
         generatedEmailsCount={generatedCount}
         approvedEmailsCount={approvedCount}
         sentEmailsCount={sentCount}
-        loading={loadingMessages || loadingLeads}
+        loading={loadingMessages || loadingCampaignLeads}
       />
 
       {/* Tab Navigation */}
@@ -316,7 +316,7 @@ export default function CampaignDetailsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/20 text-xs">
-                  {loadingLeads ? (
+                  {loadingCampaignLeads ? (
                     <tr>
                       <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
                         <Loader2 className="w-5 h-5 animate-spin mx-auto mb-1 text-accent" />
@@ -415,7 +415,7 @@ export default function CampaignDetailsPage() {
                           {msg.subject}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground font-medium">
-                          {qualifiedLeads?.find((l) => l.id === msg.lead_id)?.name ?? `Lead #${msg.lead_id}`}
+                          {assignedLeadsList?.find((l) => l.id === msg.lead_id)?.name ?? `Lead #${msg.lead_id}`}
                         </td>
                         <td className="px-4 py-3">
                           <span
@@ -444,7 +444,7 @@ export default function CampaignDetailsPage() {
           </div>
         )}
 
-        {activeTab === "settings" && <CampaignSettingsForm />}
+
       </div>
     </div>
   );

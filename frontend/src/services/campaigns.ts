@@ -3,9 +3,9 @@ import {
   Campaign,
   CampaignCreate,
   CampaignUpdate,
-  CampaignSettings,
-  CampaignSettingsUpdate,
+  CampaignAssignmentCreate,
   OutreachMessage,
+  Lead,
 } from "@/types";
 
 export const campaignsService = {
@@ -31,22 +31,19 @@ export const campaignsService = {
   deleteCampaign: (id: number): Promise<Campaign> =>
     apiDelete<Campaign>(`/campaigns/${id}`),
 
-  /** Fetch the global platform campaign settings singleton */
-  fetchCampaignSettings: async (): Promise<CampaignSettings | null> => {
-    try {
-      return await apiGet<CampaignSettings>("/campaign-settings");
-    } catch (err: any) {
-      // If backend returns 404 (not configured yet), return null gracefully
-      if (err?.status === 404) {
-        return null;
-      }
-      throw err;
-    }
-  },
 
-  /** Upsert the platform campaign settings singleton */
-  updateCampaignSettings: (data: CampaignSettingsUpdate): Promise<CampaignSettings> =>
-    apiPatch<CampaignSettings>("/campaign-settings", data),
+
+  /** Assign multiple leads to a campaign */
+  assignLeadsToCampaign: (campaignId: number, data: CampaignAssignmentCreate): Promise<any> =>
+    apiPost(`/campaigns/${campaignId}/assign-leads`, data),
+
+  /** Fetch leads assigned to a campaign */
+  fetchCampaignLeads: (campaignId: number): Promise<Lead[]> =>
+    apiGet<Lead[]>(`/campaigns/${campaignId}/leads`),
+
+  /** Remove a lead from a campaign */
+  removeCampaignLead: (campaignId: number, leadId: number): Promise<void> =>
+    apiDelete<void>(`/campaigns/${campaignId}/leads/${leadId}`),
 
   /** Fetch outreach messages for a specific campaign */
   fetchCampaignMessages: (campaignId: number): Promise<OutreachMessage[]> =>

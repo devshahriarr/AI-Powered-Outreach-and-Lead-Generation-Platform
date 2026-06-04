@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.campaign import Campaign, CampaignSettings
+from app.models.campaign import Campaign
 from app.repositories.base_repository import BaseRepository
 
 
@@ -40,23 +40,5 @@ class CampaignRepository(BaseRepository[Campaign]):
         return list(result.scalars().all())
 
 
-class CampaignSettingsRepository(BaseRepository[CampaignSettings]):
-    """
-    Repository handling raw SQLAlchemy operations for CampaignSettings.
-    """
-
-    def __init__(self) -> None:
-        super().__init__(CampaignSettings)
-
-    async def get_by_campaign_id(
-        self, db: AsyncSession, campaign_id: int
-    ) -> Optional[CampaignSettings]:
-        """Fetches the settings record associated with a given campaign ID."""
-        query = select(self.model).where(self.model.campaign_id == campaign_id)
-        result = await db.execute(query)
-        return result.scalar_one_or_none()
-
-
 # Singleton instances
 campaign_repository = CampaignRepository()
-campaign_settings_repository = CampaignSettingsRepository()
